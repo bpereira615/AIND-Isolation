@@ -39,7 +39,9 @@ def custom_score(game, player):
 
 
     # use simple objective function, check how many moves available
-    return len(game.get_legal_moves(player)) * 1.0
+    num_my = len(game.get_legal_moves(player))
+    num_opp = len(game.get_legal_moves(game.get_opponent(player)))
+    return  (num_my - num_opp) * 1.0
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -124,20 +126,30 @@ class CustomPlayer:
         # move from the game board (i.e., an opening book), or returning
         # immediately if there are no legal moves
 
+
+        depth = 1
+        best_score = 0
+        best_move = (-1, -1)
+        
         try:
             # The search method call (alpha beta or minimax) should happen in
             # here in order to avoid timeout. The try/except block will
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
-            pass
 
+            for move in legal_moves:
+                score, move = self.minimax(game=game.forecast_move(move), depth=depth)
+
+            if(score > best_score):
+                best_score = score
+                best_move = move
         except Timeout:
             # Handle any actions required at timeout, if necessary
             pass
 
         # Return the best move from the last completed search iteration
         # raise NotImplementedError
-        return (-1, -1)
+        return move
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -173,9 +185,25 @@ class CustomPlayer:
         if self.time_left() < self.TIMER_THRESHOLD:
             raise Timeout()
 
+        # m is current maximum
+        m = 0;
+        best = (-1, -1)
+
+
+        for move in game.get_legal_moves(player=self):
+           
+            curr_game = game.forecast_move(move=move)
+            player = curr_game.__active_player__
+
+            curr = self.score(game, player)
+            if(m < curr):
+                m = curr
+                best = move
+
+
         # TODO: finish this function!
         # raise NotImplementedError
-        return -1.0, (-1, -1)
+        return m, best
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
