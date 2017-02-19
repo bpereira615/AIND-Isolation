@@ -41,7 +41,8 @@ def custom_score(game, player):
     # use simple objective function, check how many moves available
     num_my = len(game.get_legal_moves(player))
     num_opp = len(game.get_legal_moves(game.get_opponent(player)))
-    return  (num_my - num_opp) * 1.0
+    score = (num_my - num_opp) * 1.0
+    return score
 
 class CustomPlayer:
     """Game-playing agent that chooses a move using your evaluation function
@@ -127,9 +128,16 @@ class CustomPlayer:
         # immediately if there are no legal moves
 
 
-        depth = 1
-        best_score = 0
+        best_score = -1
         best_move = (-1, -1)
+        method = self.minimax
+        if self.method != 'minimax':
+            method = self.alphabeta
+
+        if len(legal_moves) == 0:
+            return best_move
+
+
         
         try:
             # The search method call (alpha beta or minimax) should happen in
@@ -137,19 +145,19 @@ class CustomPlayer:
             # automatically catch the exception raised by the search method
             # when the timer gets close to expiring
 
-            for move in legal_moves:
-                score, move = self.minimax(game=game.forecast_move(move), depth=depth)
+            depth = 1
+            #for move in legal_moves:
+            #    (score, move) = method(game=game.forecast_move(move), depth=depth)
 
-            if(score > best_score):
-                best_score = score
-                best_move = move
+            best_move = method(game, depth = 1)[1]#self.search_depth)[1]
         except Timeout:
             # Handle any actions required at timeout, if necessary
             pass
 
         # Return the best move from the last completed search iteration
         # raise NotImplementedError
-        return move
+
+        return best_move
 
     def minimax(self, game, depth, maximizing_player=True):
         """Implement the minimax search algorithm as described in the lectures.
@@ -186,7 +194,7 @@ class CustomPlayer:
             raise Timeout()
 
         # m is current maximum
-        m = 0;
+        m = -1;
         best = (-1, -1)
 
 
@@ -203,7 +211,7 @@ class CustomPlayer:
 
         # TODO: finish this function!
         # raise NotImplementedError
-        return m, best
+        return (m, best)
 
     def alphabeta(self, game, depth, alpha=float("-inf"), beta=float("inf"), maximizing_player=True):
         """Implement minimax search with alpha-beta pruning as described in the
